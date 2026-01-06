@@ -1,0 +1,37 @@
+name: Generate KiCad Schematics
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  schematics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate schematic PDFs
+        run: |
+          mkdir -p output
+
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            kicad/kicad:8.0 \
+            bash -c '
+              for pro in pcb/*.kicad_pro; do
+                name=$(basename "$pro" .kicad_pro)
+                echo "Exporting schematic for $name"
+                kicad-cli sch export pdf \
+                  --project "$pro" \
+                  "output/${name}-schematic.pdf"
+              done
+            '
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: schematics
+          path: output/*.pdf

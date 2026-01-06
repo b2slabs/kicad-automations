@@ -33,6 +33,7 @@ jobs:
       - name: Generate schematic PDFs (KiCad 9)
         run: |
           docker run --rm \
+            -u "$(id -u):$(id -g)" \
             -v "$PWD:/workspace" \
             -w /workspace \
             kicad/kicad:9.0 \
@@ -46,7 +47,6 @@ jobs:
                   --output "output/${name}-schematic.pdf"
               done
             '
-
 
       - name: Upload PDFs
         uses: actions/upload-artifact@v4

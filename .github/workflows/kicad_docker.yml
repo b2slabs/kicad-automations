@@ -11,25 +11,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # - name: Generate schematic PDFs (KiCad 9)
-      #   run: |
-      #     mkdir -p output
-
-      #     docker run --rm \
-      #       -v "$PWD:/workspace" \
-      #       -w /workspace \
-      #       kicad/kicad:9.0 \
-      #       bash -c '
-      #         for sch in pcb/*.kicad_sch; do
-      #           name=$(basename "$sch" .kicad_sch)
-      #           echo "Exporting schematic for $name"
-      #           kicad-cli sch export pdf \
-      #             "$sch" \
-      #             -o "output/${name}-schematic.pdf"
-      #         done
-      #       '
-
+        
       - name: Generate schematic PDFs (KiCad 9)
         run: |
           docker run --rm \

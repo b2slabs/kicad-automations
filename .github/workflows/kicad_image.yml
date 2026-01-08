@@ -1,0 +1,53 @@
+name: Generate KiCad Schematics
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  schematics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate schematic PDFs (KiCad 9)
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            kicad/kicad:9.0 \
+            bash -c '
+              mkdir -p output
+              for sch in pcb/*.kicad_sch; do
+                name=$(basename "$sch" .kicad_sch)
+                echo "Exporting schematic for $name"
+                kicad-cli sch export pdf \
+                  "$sch" \
+                  --output "output/${name}-schematic.pdf"
+              done
+            '
+
+      - name: Install PDF tools
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Convert PDFs to PNG
+        run: |
+          mkdir -p output/png
+          for pdf in output/*-schematic.pdf; do
+            name=$(basename "$pdf" .pdf)
+            echo "Converting $pdf → PNG"
+            pdftoppm \
+              -png \
+              -r 300 \
+              "$pdf" \
+              "output/png/$name"
+          done
+
+      - name: Upload schematic PNGs
+        uses: actions/upload-artifact@v4
+        with:
+          name: schematic-images
+          path: output/png/*.png

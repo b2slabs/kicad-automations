@@ -1,1 +1,1 @@
-The KiCAD pdf is linked [here](output/MyBoard-schematic.pdf)
+The KiCAD pdf is linked [here](output/board-schematic.pdf)

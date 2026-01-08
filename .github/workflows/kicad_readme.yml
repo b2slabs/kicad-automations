@@ -1,21 +1,17 @@
-name: KiCad Release
+name: Generate KiCad Schematics
 
 on:
   push:
-    tags:
-      - "v*"
+  pull_request:
 
 jobs:
-  release:
+  schematics:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write   # required to upload release assets
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        
       - name: Generate schematic PDFs (KiCad 9)
         run: |
           docker run --rm \
@@ -34,31 +30,40 @@ jobs:
               done
             '
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            output/*.pdf
+          name: schematics
+          path: output/*.pdf
 
-      - name: Update README with PDF links
+      - name: Update README with schematic links
         run: |
-          # Define the release tag
-          release_tag="${GITHUB_REF##*/}"
-          # Get the list of PDF files generated
-          pdf_files=$(ls output/*.pdf)
-          
-          # Prepare new links for README
-          echo "Updating README with links to new PDFs..."
-          echo -e "\n## New Schematics for $release_tag" >> README.md
-          for pdf in $pdf_files; do
-            file_name=$(basename "$pdf")
-            pdf_url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${release_tag}/${file_name}"
-            echo "- [${file_name}](${pdf_url})" >> README.md
+          echo "Updating README.md"
+
+          SCHEMATIC_LIST=""
+          for pdf in output/*-schematic.pdf; do
+            name=$(basename "$pdf" -schematic.pdf)
+            SCHEMATIC_LIST="$SCHEMATIC_LIST- [$name schematic]($pdf)\n"
           done
 
-          # Commit the changes to the README
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add README.md
-          git commit -m "Update README with new schematic PDFs for $release_tag"
-          git push
+          awk '
+            BEGIN {in_block=0}
+            /<!-- SCHEMATICS_START -->/ {
+              print
+              printf "%s", ENVIRON["SCHEMATIC_LIST"]
+              in_block=1
+              next
+            }
+            /<!-- SCHEMATICS_END -->/ {in_block=0}
+            !in_block {print}
+          ' README.md > README.tmp
+
+          mv README.tmp README.md
+        env:
+          SCHEMATIC_LIST: ""
+
+      - name: Commit README update
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: update schematic PDFs"
+          file_pattern: README.md output/*.pdf

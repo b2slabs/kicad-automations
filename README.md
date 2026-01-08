@@ -1,0 +1,1 @@
+The KiCAD pdf is linked [here](output/MyBoard-schematic.pdf)

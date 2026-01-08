@@ -1,4 +1,4 @@
-name: Generate KiCad Schematics - GitHub Pages
+name: Generate KiCad Schematics - Images
 
 on:
   push:
@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false  # Important for pushing to gh-pages
 
       - name: Generate schematic PDFs (KiCad 9)
         run: |
@@ -48,23 +46,9 @@ jobs:
               "output/png/$name"
           done
 
-      - name: Deploy to GitHub Pages
-        run: |
-          # Configure git
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Clone gh-pages branch
-          git clone --branch gh-pages https://github.com/${{ github.repository }} gh-pages || \
-            git clone https://github.com/${{ github.repository }} gh-pages
-          cd gh-pages
-
-          # Clear old schematics and copy new ones
-          rm -rf schematics
-          mkdir -p schematics
-          cp -r ../output/png/* schematics/
-
-          # Commit and push
-          git add schematics/*
-          git commit -m "Update generated schematics"
-          git push origin gh-pages
+      - name: Deploy PNGs to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./output/png
+          publish_branch: gh-pages

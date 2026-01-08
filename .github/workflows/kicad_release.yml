@@ -1,41 +1,41 @@
-name: KiCad Release
+# name: KiCad Release
 
-on:
-  push:
-    tags:
-      - "v*"
+# on:
+#   push:
+#     tags:
+#       - "v*"
 
-jobs:
-  release:
-    runs-on: ubuntu-latest
+# jobs:
+#   release:
+#     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write   # required to upload release assets
+#     permissions:
+#       contents: write   # required to upload release assets
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Generate schematic PDFs (KiCad 9)
-        run: |
-          docker run --rm \
-            -u "$(id -u):$(id -g)" \
-            -v "$PWD:/workspace" \
-            -w /workspace \
-            kicad/kicad:9.0 \
-            bash -c '
-              mkdir -p output
-              for sch in pcb/*.kicad_sch; do
-                name=$(basename "$sch" .kicad_sch)
-                echo "Exporting schematic for $name"
-                kicad-cli sch export pdf \
-                  "$sch" \
-                  --output "output/${name}-schematic.pdf"
-              done
-            '
+#       - name: Generate schematic PDFs (KiCad 9)
+#         run: |
+#           docker run --rm \
+#             -u "$(id -u):$(id -g)" \
+#             -v "$PWD:/workspace" \
+#             -w /workspace \
+#             kicad/kicad:9.0 \
+#             bash -c '
+#               mkdir -p output
+#               for sch in pcb/*.kicad_sch; do
+#                 name=$(basename "$sch" .kicad_sch)
+#                 echo "Exporting schematic for $name"
+#                 kicad-cli sch export pdf \
+#                   "$sch" \
+#                   --output "output/${name}-schematic.pdf"
+#               done
+#             '
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            output/*.pdf
+#       - name: Create GitHub Release
+#         uses: softprops/action-gh-release@v2
+#         with:
+#           files: |
+#             output/*.pdf

@@ -1,0 +1,64 @@
+name: KiCad Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # required to upload release assets
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate schematic PDFs (KiCad 9)
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            kicad/kicad:9.0 \
+            bash -c '
+              mkdir -p output
+              for sch in pcb/*.kicad_sch; do
+                name=$(basename "$sch" .kicad_sch)
+                echo "Exporting schematic for $name"
+                kicad-cli sch export pdf \
+                  "$sch" \
+                  --output "output/${name}-schematic.pdf"
+              done
+            '
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            output/*.pdf
+
+      - name: Update README with PDF links
+        run: |
+          # Define the release tag
+          release_tag="${GITHUB_REF##*/}"
+          # Get the list of PDF files generated
+          pdf_files=$(ls output/*.pdf)
+          
+          # Prepare new links for README
+          echo "Updating README with links to new PDFs..."
+          echo -e "\n## New Schematics for $release_tag" >> README.md
+          for pdf in $pdf_files; do
+            file_name=$(basename "$pdf")
+            pdf_url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${release_tag}/${file_name}"
+            echo "- [${file_name}](${pdf_url})" >> README.md
+          done
+
+          # Commit the changes to the README
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add README.md
+          git commit -m "Update README with new schematic PDFs for $release_tag"
+          git push

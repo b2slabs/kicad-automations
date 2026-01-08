@@ -1,0 +1,25 @@
+#!/bin/bash
+# .git/hooks/pre-commit
+
+# Paths
+SRC="pcb/board.kicad_sch"
+DEST_PDF="outputs2/board.pdf"
+DEST_SVG="outputs2"
+
+
+# Ensure output directory exists
+mkdir -p "$(dirname "$DEST")"
+
+# Export the schematic to PDF using KiCad CLI
+kicad-cli sch export pdf "$SRC" --output "$DEST_PDF"
+kicad-cli sch export svg "$SRC" --output "$DEST_SVG"
+
+# Check for errors
+if [ $? -eq 0 ]; then
+    echo "Schematic exported to $DEST_PDF"
+else
+    echo "Error exporting schematic!" >&2
+    exit 1
+fi
+
+git add "$DEST_PDF"

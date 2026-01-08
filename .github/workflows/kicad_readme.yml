@@ -1,4 +1,4 @@
-name: Generate KiCad Schematics
+name: Generate KiCad Schematics - README
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: write
-  
+
 jobs:
   schematics:
     runs-on: ubuntu-latest

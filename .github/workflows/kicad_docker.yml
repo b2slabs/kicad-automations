@@ -1,4 +1,4 @@
-name: Generate KiCad Schematics
+name: Generate KiCad Schematics - Artifacts
 
 on:
   push:

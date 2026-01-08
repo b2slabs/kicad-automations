@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Generate schematic PDFs (KiCad 9)
         run: |
           docker run --rm \
@@ -30,39 +30,35 @@ jobs:
               done
             '
 
-      - name: Upload PDFs
-        uses: actions/upload-artifact@v4
-        with:
-          name: schematics
-          path: output/*.pdf
-
       - name: Update README with schematic links
         run: |
           echo "Updating README.md"
 
-          SCHEMATIC_LIST=""
-          for pdf in output/*-schematic.pdf; do
+          export SCHEMATIC_LIST=""
+          for pdf in $(ls output/*-schematic.pdf | sort); do
             name=$(basename "$pdf" -schematic.pdf)
-            SCHEMATIC_LIST="$SCHEMATIC_LIST- [$name schematic]($pdf)\n"
+            SCHEMATIC_LIST="${SCHEMATIC_LIST}- [$name schematic]($pdf)\n"
           done
 
           awk '
-            BEGIN {in_block=0}
             /<!-- SCHEMATICS_START -->/ {
               print
               printf "%s", ENVIRON["SCHEMATIC_LIST"]
               in_block=1
               next
             }
-            /<!-- SCHEMATICS_END -->/ {in_block=0}
-            !in_block {print}
+            /<!-- SCHEMATICS_END -->/ {
+              in_block=0
+              print
+              next
+            }
+            !in_block { print }
           ' README.md > README.tmp
 
           mv README.tmp README.md
-        env:
-          SCHEMATIC_LIST: ""
 
       - name: Commit README update
+        if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs: update schematic PDFs"

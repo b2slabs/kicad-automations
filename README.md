@@ -5,6 +5,12 @@ The KiCAD pdf is linked [here](output/board-schematic.pdf)
 
 <img src="outputs2/board.svg" alt="schematic" width="10000" height="10000">
 
+- The issue with git pushing is that you would need to merge/rebase every time you push
+    - This can be circumvented using Github Pages
+- Git hook is a better solution because it automatically updates every time you save
+    - Global hook could be an alternative
+
+
 Git hooks
 ```
 git config -f .gitconfig core.hooksPath hooks

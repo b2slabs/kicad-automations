@@ -1,0 +1,12 @@
+name: export-kicad-documents
+run-name: Export KiCAD documents
+on: [push]
+
+jobs:
+  export-documents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Getting KiCAD container
+        run: docker pull kicad/kicad:nightly-full
+        run: docker run kicad/kicad:nightly-full echo "test"

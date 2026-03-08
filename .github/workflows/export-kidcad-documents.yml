@@ -7,6 +7,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
       - name: Getting KiCAD container
         run: docker pull kicad/kicad:nightly-full
-        run: docker run kicad/kicad:nightly-full echo "test"
+
+      - name: Exporting KiCAD svgs
+        run: |
+          mkdir -p output
+          FILES=$(find . -name *.kicad_pro)
+
+          for file in $FILES; do
+            schematic="${file::-10}.kicad_sch"
+            echo "Exporting $schematic"
+            
+            docker run \
+            -v $(pwd):/workspace \
+            -w /workspace \
+            kicad/kicad:nightly-full \
+            kicad-cli sch export svg --output ./outputs "${schematic}"
+          done
+
+      - name: Upload svgs
+        uses: actions/upload-artifact@v6
+        with:
+          name: schematics
+          path: outputs/*.svg

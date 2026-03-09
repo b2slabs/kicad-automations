@@ -1,0 +1,42 @@
+name: Build Github Pages
+
+on:
+  push:
+    paths:
+      - "pcb/**"
+      - "docs/**"
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Install kicad
+        run: |
+          sudo add-apt-repository --yes ppa:kicad/kicad-9.0-releases
+          sudo apt update
+          sudo apt install -y kicad
+
+      - name: Export schematics
+        run: |
+          mkdir -p docs/assets/schematics
+          kicad-cli sch export svg pcb/board.kicad_sch \
+            -o docs/assets/schematics/
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install MkDocs
+        run: |
+          pip install mkdocs mkdocs-material
+      
+      - name: build site
+        run: mkdocs build
+
+      - name: Deploy Pages
+        run: mkdocs gh-deploy --force

@@ -7,3 +7,5 @@ for(int i = 0; i < 10; i++) {
   console.log("Hello world!")
 }
 ```
+
+![schematic](/assets/schematics/schematics.svg)

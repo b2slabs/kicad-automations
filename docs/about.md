@@ -8,4 +8,4 @@ for(int i = 0; i < 10; i++) {
 }
 ```
 
-![schematic](/docs/assets/schematics/schematics.svg)
+![schematic](./assets/schematics/schematics.svg)

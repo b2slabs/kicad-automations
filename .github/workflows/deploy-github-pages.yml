@@ -27,7 +27,7 @@ jobs:
         run: |
           mkdir -p docs/assets/schematics
           kicad-cli sch export svg pcb/board.kicad_sch \
-            -o /docs/assets/schematics/schematics.svg
+            -o docs/assets/schematics/schematics.svg
 
       - name: Setup Python
         uses: actions/setup-python@v5
